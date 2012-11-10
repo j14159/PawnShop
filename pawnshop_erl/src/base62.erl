@@ -1,5 +1,5 @@
 -module(base62).
--export([base62_list/1, base62_char/1, base62/2]).
+-export([base62_list/1, base62_char/1, base62/2, base62_char_list/0]).
 
 -ifdef(TEST).
 -include_lib("eunit/include/eunit.hrl").
@@ -15,7 +15,7 @@ base62_list(Num) ->
 	_ when Remaining > 0 ->
 	    [Remaining | []]; %have to do this or it's not eval'd properly.
 	_ ->
-	    []
+	    [0 | []]
     end.
 
 %% @doc legacy function, looks up the appropriate base 62 character for given value.
@@ -32,16 +32,14 @@ base62_char_list() ->
 %% every character.
 base62(Num, CharList) ->
     Indices = base62_list(Num),
-    MapFun = fun(X) -> lists:nth(X + 1, CharList) end, %base62_char(X) end,
-    Digits = lists:map(MapFun, Indices),
-    lists:reverse(Digits).
+    lists:foldl(fun(L, Acc) -> string:chars(lists:nth(L + 1, CharList), 1) ++ Acc end, "", Indices).
 
 -ifdef(TEST).
 
 base62_test() ->
     CharList = base62_char_list(),
-    [?_assert(base62(620, CharList) =:= "A0"),
-     ?_assert(base62(0, CharList) =:= "0"),
-    ?_assert(base62(36, CharList) =:= "a")].
+    [?assert(base62(620, CharList) =:= "A0"),
+     ?assert(base62(0, CharList) =:= "0"),
+    ?assert(base62(36, CharList) =:= "a")].
 
 -endif.
